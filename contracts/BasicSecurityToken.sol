@@ -7,9 +7,9 @@ import "./../node_modules/openzeppelin-solidity/contracts/token/ERC20/BurnableTo
 import "./Whitelist.sol";
 import "./Frozenlist.sol";
 import "./Issuable.sol";
-import "./ERCX.sol";
+import "./ERC2980.sol";
 
-contract BasicSecurityToken is ERCX, Ownable, Issuable, DetailedERC20, MintableToken, BurnableToken, Frozenlist, Whitelist {
+contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, MintableToken, BurnableToken, Frozenlist, Whitelist {
 
     constructor(string memory name, string memory symbol, bool enableWhitelist)
     Ownable()
