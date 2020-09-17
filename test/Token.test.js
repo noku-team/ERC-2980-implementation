@@ -280,6 +280,14 @@ contract('Token', accounts => {
 			await tokenInstance.enableWhitelist({from: owner, gas: MAX_GAS});
 		});
 
+		it('has disabled whitelist', async function () {
+			let whitelistEnabled = await tokenInstance.whitelistEnabled();
+			assert.equal(whitelistEnabled, true);			
+			await tokenInstance.disableWhitelist({from: owner, gas: MAX_GAS});
+			whitelistEnabled = await tokenInstance.whitelistEnabled();
+			assert.equal(whitelistEnabled, false);			
+		});
+
 		it('has minted tokens to whitelisted account', async function () {
 			let balanceAlice = await tokenInstance.balanceOf(Alice);
 			assert.equal(balanceAlice, 0);			
@@ -327,6 +335,11 @@ contract('Token', accounts => {
 		it('is issuer', async function () {
 			let isIssuer = await tokenInstance.isIssuer(Igor);
 			assert.equal(isIssuer, true);
+		});
+
+		it('is not issuer', async function () {
+			let isIssuer = await tokenInstance.isIssuer(stranger);
+			assert.equal(isIssuer, false);
 		});
 
 		it('has added issuer', async function () {

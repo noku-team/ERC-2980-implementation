@@ -18,7 +18,7 @@ contract Whitelist is Issuable {
   }
 
   /**
-   * @dev Throws if operator is not whitelisted.
+   * @dev Throws if operator is not whitelisted and whitelist is enabled.
    * @param _operator address
    */
   modifier onlyIfWhitelisted(address _operator) {

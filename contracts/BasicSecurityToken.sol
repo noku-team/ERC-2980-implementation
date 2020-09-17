@@ -47,7 +47,7 @@ contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, Mintab
         return true;
     }
 
-    function transferFrom(address sender, address recipient, uint256 amount) public onlyIfNotFrozen(msg.sender) onlyIfNotFrozen(recipient) onlyIfWhitelisted(recipient) returns (bool) {
+    function transferFrom(address sender, address recipient, uint256 amount) public onlyIfNotFrozen(sender) onlyIfNotFrozen(recipient) onlyIfWhitelisted(recipient) returns (bool) {
         require(super.transferFrom(sender, recipient, amount), "Transfer failed");
 
         return true;
