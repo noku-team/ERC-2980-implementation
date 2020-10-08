@@ -16,7 +16,10 @@ contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, Mintab
     DetailedERC20(name, symbol, 0)
     Whitelist(enableWhitelist)
     public {
-        
+        addIssuer(owner);
+        if(enableWhitelist) {
+            addAddressToWhitelist(owner);
+        }
     }
 
     //Modifiers
@@ -65,6 +68,25 @@ contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, Mintab
         _transfer(from, msg.sender, fundsRevoked);
 
         emit FundsRevoked(from, fundsRevoked);
+    }
+
+      function transferOwnership(address _newOwner) public onlyOwner {
+        if(isIssuer(owner)) {
+            if(whitelistEnabled) {
+                removeAddressFromWhitelist(owner);
+                addAddressToWhitelist(_newOwner);
+            }
+            transferIssuer(_newOwner);
+        }
+        super.transferOwnership(_newOwner);
+    }
+
+      function renounceOwnership() public onlyOwner {        
+        if(whitelistEnabled) {
+            removeAddressFromWhitelist(owner);
+        }
+        removeIssuer(owner);
+        super.renounceOwnership();
     }
 
     //Internal functions

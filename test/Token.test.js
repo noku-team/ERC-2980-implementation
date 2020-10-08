@@ -20,7 +20,7 @@ contract('Token', accounts => {
 	let tokenInstance;
 
 	beforeEach(async function () {
-		tokenInstance = await Token.new('ERC2980 Token', 'LUGA', false, { from: owner });
+		tokenInstance = await Token.new('ERC2980 Token', 'ST', false, { from: owner });
 		await tokenInstance.addIssuer(Igor, {from: owner, gas: MAX_GAS});
 	});
 
@@ -56,6 +56,70 @@ contract('Token', accounts => {
 			await expectRevert(tokenInstance.renounceOwnership({from: stranger, gas: MAX_GAS}), 'Ownable: caller is not the owner');
 		});
 
+		it('has renounced ownership and is no more issuer (no whitelisted token)', async function () {
+			let isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, true);
+
+			await tokenInstance.renounceOwnership({from: owner, gas: MAX_GAS});
+			
+			isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, false);
+		});
+
+		it('has renounced ownership and is no more issuer & whitelisted (whitelisted token)', async function () {
+			tokenInstance = await Token.new('ERC2980 Token', 'ST', true, { from: owner });
+			let isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, true);
+			let isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, true);
+
+			await tokenInstance.renounceOwnership({from: owner, gas: MAX_GAS});
+
+			isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, false);			
+			isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, false);
+		});
+
+		it('has transferred ownership to the correct address and the new address is issuer (no whitelisted token)', async function () {
+			let isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, true);
+			isIssuer = await tokenInstance.isIssuer(newOwner);
+			assert.equal(isIssuer, false);
+
+			await tokenInstance.transferOwnership(newOwner, {from: owner, gas: MAX_GAS});
+			
+			isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, false);
+			isIssuer = await tokenInstance.isIssuer(newOwner);
+			assert.equal(isIssuer, true);
+		});
+
+		it('has transferred ownership to the correct address and the new address is issuer (whitelist token)', async function () {
+			tokenInstance = await Token.new('ERC2980 Token', 'ST', true, { from: owner });
+			let isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, true);
+			isIssuer = await tokenInstance.isIssuer(newOwner);
+			assert.equal(isIssuer, false);
+
+			let isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, true);
+			isWhitelisted = await tokenInstance.whitelist(newOwner);
+			assert.equal(isWhitelisted, false);
+
+			await tokenInstance.transferOwnership(newOwner, {from: owner, gas: MAX_GAS});
+
+			isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, false);
+			isIssuer = await tokenInstance.isIssuer(newOwner);
+			assert.equal(isIssuer, true);
+
+			isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, false);
+			isWhitelisted = await tokenInstance.whitelist(newOwner);
+			assert.equal(isWhitelisted, true);
+		});
+
 	});
 
 	describe("#addAddressToFrozenlist()", function() {
@@ -76,12 +140,18 @@ contract('Token', accounts => {
 			assert.equal(isFrozen, false);
 		});
 
+		it('owner is not frozen by default', async function () {
+			let isFrozen = await tokenInstance.frozenlist(owner);
+			assert.equal(isFrozen, false);
+		});
+
 		it('should fail sender frozen account transfer', async function () {
 			await expectRevert(tokenInstance.transfer(Alice, 1, {from: Francis, gas: MAX_GAS}), 'Account frozen');
 		});
 
-		it('should fail unfreeze from non-issuer (owner)', async function () {
-			await expectRevert(tokenInstance.removeAddressFromFrozenlist(Alice, {from: owner, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
+		it('owner is issuer by default', async function () {
+			let isIssuer = await tokenInstance.isIssuer(owner);
+			assert.equal(isIssuer, true);
 		});
 
 		it('should fail unfreeze from non-issuer (stranger)', async function () {
@@ -154,10 +224,6 @@ contract('Token', accounts => {
 			await expectRevert(tokenInstance.reassign(Alice, Bob, {from: stranger, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
 		});
 
-		it('should fail reassign from not issuer (owner)', async function () {
-			await expectRevert(tokenInstance.reassign(Alice, Bob, {from: owner, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
-		});
-
 		it('has reassigned tokens', async function () {
 			let reassign = await tokenInstance.reassign(Alice, Bob, {from: Igor, gas: MAX_GAS});
 			expectEvent(reassign, 'FundsReassigned', {
@@ -209,10 +275,6 @@ contract('Token', accounts => {
 
 		it('should fail revoke from not issuer (stranger)', async function () {
 			await expectRevert(tokenInstance.revoke(Alice, {from: stranger, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
-		});
-
-		it('should fail revoke from not issuer (owner)', async function () {
-			await expectRevert(tokenInstance.revoke(Alice, {from: owner, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
 		});
 
 		it('has revoked tokens', async function () {
@@ -288,6 +350,18 @@ contract('Token', accounts => {
 			assert.equal(whitelistEnabled, false);			
 		});
 
+		it('owner is not whitelisted by default if whitelist is not enabled', async function () {
+			let isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, false);
+		});
+
+
+		it('owner is whitelisted by default if whitelist enabled', async function () {
+			tokenInstance = await Token.new('ERC2980 Token', 'ST', true, { from: owner });
+			let isWhitelisted = await tokenInstance.whitelist(owner);
+			assert.equal(isWhitelisted, true);
+		});
+
 		it('has minted tokens to whitelisted account', async function () {
 			let balanceAlice = await tokenInstance.balanceOf(Alice);
 			assert.equal(balanceAlice, 0);			
@@ -312,10 +386,6 @@ contract('Token', accounts => {
 
 		it('should fail mint to not whitelisted account', async function () {
 			await expectRevert.unspecified(tokenInstance.mint(Alice, 10, {from: Igor, gas: MAX_GAS}));
-		});
-
-		it('should fail remove whitelist from non-issuer (owner)', async function () {
-			await expectRevert(tokenInstance.removeAddressFromWhitelist(Alice, {from: owner, gas: MAX_GAS}), 'Issuable: caller is not the issuer');
 		});
 
 		it('should fail remove whitelist from non-issuer (stranger)', async function () {
