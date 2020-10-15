@@ -55,8 +55,7 @@ contract Whitelist is Issuable {
   /**
    * @dev add addresses to the whitelist
    * @param _operators addresses
-   * @return true if at least one address was added to the whitelist,
-   * false if all addresses were already in the whitelist
+   * @return true if at least one address was added to the whitelist,  false if all addresses were already in the whitelist
    */
   function addAddressesToWhitelist(address[] _operators) public onlyIssuer {
     for (uint256 i = 0; i < _operators.length; i++) {
@@ -67,8 +66,7 @@ contract Whitelist is Issuable {
   /**
    * @dev remove an address from the whitelist
    * @param _operator address
-   * @return true if the address was removed from the whitelist,
-   * false if the address wasn't in the whitelist in the first place
+   * @return true if the address was removed from the whitelist, false if the address wasn't in the whitelist in the first place
    */
   function removeAddressFromWhitelist(address _operator) public onlyIssuer {
     removeRole(_operator, ROLE_WHITELISTED);
@@ -77,8 +75,7 @@ contract Whitelist is Issuable {
   /**
    * @dev remove addresses from the whitelist
    * @param _operators addresses
-   * @return true if at least one address was removed from the whitelist,
-   * false if all addresses weren't in the whitelist in the first place
+   * @return true if at least one address was removed from the whitelist, false if all addresses weren't in the whitelist in the first place
    */
   function removeAddressesFromWhitelist(address[] _operators) public onlyIssuer {
     for (uint256 i = 0; i < _operators.length; i++) {

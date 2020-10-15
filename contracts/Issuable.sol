@@ -46,8 +46,7 @@ contract Issuable is Ownable, RBAC {
     /**
    * @dev remove an address from issuers
    * @param _operator address
-   * @return true if the address has been removed from issuers,
-   * false if the address wasn't in the issuer list in the first place
+   * @return true if the address has been removed from issuers, false if the address wasn't in the issuer list in the first place
    */
   function removeIssuer(address _operator) public onlyOwner {
     removeRole(_operator, ROLE_ISSUER);
