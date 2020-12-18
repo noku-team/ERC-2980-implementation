@@ -91,7 +91,7 @@ contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, Mintab
 
     //Internal functions
 
-    function _transfer(address _from, address _to, uint256 _value) public returns (bool) {
+    function _transfer(address _from, address _to, uint256 _value) private returns (bool) {
         require(_value <= balances[_from]);
         require(_to != address(0));
 
