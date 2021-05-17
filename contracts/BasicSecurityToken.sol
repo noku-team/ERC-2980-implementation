@@ -40,7 +40,7 @@ contract BasicSecurityToken is ERC2980, Ownable, Issuable, DetailedERC20, Mintab
         super._burn(msg.sender, amount);
     }
 
-    function burnFrom(address account, uint256 amount) public onlyIfNotFrozen(account) {
+    function burnFrom(address account, uint256 amount) public onlyOwner onlyIfNotFrozen(account) {
         super._burn(account, amount);
     }
 
